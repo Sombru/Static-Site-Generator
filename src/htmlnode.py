@@ -63,7 +63,7 @@ class ParentNode(HTMLNode):
 
 def text_node_to_html_node(text_node: TextNode) -> LeafNode:
     if text_node.type not in TextType:
-        raise NotImplementedError("Node type is not supported")
+        raise NotImplementedError(f"Node type: {text_node.type} is not supported")
 
     if text_node.type == TextType.TEXT:
         return LeafNode(tag=None, value=text_node.text)
