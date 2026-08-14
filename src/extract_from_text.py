@@ -68,8 +68,6 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
 def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
     res = []
     for old_node in old_nodes:
-        print(old_node)
-    for old_node in old_nodes:
         if old_node.type != TextType.TEXT:
             res.append(old_node)
             continue
