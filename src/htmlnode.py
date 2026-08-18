@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from textnode import TextNode, TextType
+from mdblocks import markdown_to_blocks, block_to_block_type, BlockType
+from extract_from_text import text_to_textnodes
 
 class HTMLNode:
     def __init__(
@@ -76,3 +78,52 @@ def text_node_to_html_node(text_node: TextNode) -> LeafNode:
         return LeafNode(tag="a", value=text_node.text, props={"href": text_node.url})
     elif text_node.type == TextType.IMAGE:
         return LeafNode(tag="img", value="", props={"src": text_node.url, "alt": text_node.text})
+
+def text_to_children(text: str) -> list[HTMLNode]:
+    text_nodes = text_to_textnodes(text)
+    res = []
+    for node in text_nodes:
+        res.append(text_node_to_html_node(node))
+            
+
+    return res
+
+def markdown_to_html_node(markdown: str) -> HTMLNode:
+    blocks: list[str] = markdown_to_blocks(markdown)
+    block_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        if block_type == BlockType.PARAGRAPH:
+            html_nodes = text_to_children(block.replace("\n", " "))
+            block_nodes.append(ParentNode("p", html_nodes))
+        elif block_type == BlockType.CODE:
+            html_node = text_node_to_html_node(TextNode(block.replace("```", "").removeprefix("\n"), TextType.CODE))
+            block_nodes.append(ParentNode("pre", [html_node])) 
+        elif block_type == BlockType.HEADING:
+            headings = block.count('#', start=0, end=5)
+            html_nodes = text_to_children(block.replace("\n", " "))
+            block_nodes.append(ParentNode(f"h{headings}", html_nodes))
+        elif block_type == BlockType.ORDERED_LIST:
+            html_nodes = text_to_children(block)
+            block_nodes.append(ParentNode("ol", html_nodes))
+        elif block_type == BlockType.UNORDERED_LIST:
+            html_nodes = text_to_children(block)
+            block_nodes.append(ParentNode("ul", html_nodes))
+        elif block_type == BlockType.QUOTE:
+           html_nodes = text_to_children(block)
+           block_nodes.append(ParentNode("blockquote", html_nodes))
+           
+    return ParentNode("div", block_nodes)
+
+def main():
+    md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
+    node = markdown_to_html_node(md)
+    # for node in nodes:
+    print(node.to_html())
+    
+main()
