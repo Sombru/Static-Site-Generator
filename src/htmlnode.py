@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from textnode import TextNode, TextType
 from mdblocks import markdown_to_blocks, block_to_block_type, BlockType
 from extract_from_text import text_to_textnodes
@@ -84,9 +86,26 @@ def text_to_children(text: str) -> list[HTMLNode]:
     res = []
     for node in text_nodes:
         res.append(text_node_to_html_node(node))
-            
 
     return res
+
+def remove_heading_prefix(line: str) -> str:
+    return re.sub(r"^#+ ", "", line)
+
+def remove_block_quote_prefix(line: str) -> str:
+    return re.sub(r">\s+", "", line)
+
+def remove_unordered_list_prefix(line: str) -> str:
+    return re.sub(r"-\s+", "", line)
+
+def remove_ordered_list_prefix(line: str) -> str:
+    return re.sub(r"\d+\.\s+", "", line)
+
+def list_items_to_html_nodes(block: str, prefix_remover) -> list[HTMLNode]:
+    return [
+        ParentNode("li", text_to_children(prefix_remover(line)))
+        for line in block.splitlines()
+    ]
 
 def markdown_to_html_node(markdown: str) -> HTMLNode:
     blocks: list[str] = markdown_to_blocks(markdown)
@@ -100,27 +119,28 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
             html_node = text_node_to_html_node(TextNode(block.replace("```", "").removeprefix("\n"), TextType.CODE))
             block_nodes.append(ParentNode("pre", [html_node])) 
         elif block_type == BlockType.HEADING:
-            headings = block.count('#', start=0, end=5)
-            html_nodes = text_to_children(block.replace("\n", " "))
+            headings = block.count('#', 0, 5)
+            html_nodes = text_to_children(remove_heading_prefix(block.replace("\n", " ")))
             block_nodes.append(ParentNode(f"h{headings}", html_nodes))
         elif block_type == BlockType.ORDERED_LIST:
-            html_nodes = text_to_children(block)
+            html_nodes = list_items_to_html_nodes(block, remove_ordered_list_prefix)
             block_nodes.append(ParentNode("ol", html_nodes))
         elif block_type == BlockType.UNORDERED_LIST:
-            html_nodes = text_to_children(block)
+            html_nodes = list_items_to_html_nodes(block, remove_unordered_list_prefix)
             block_nodes.append(ParentNode("ul", html_nodes))
         elif block_type == BlockType.QUOTE:
-           html_nodes = text_to_children(block)
+           html_nodes = text_to_children(remove_block_quote_prefix(block.replace("\n", " ")))
            block_nodes.append(ParentNode("blockquote", html_nodes))
            
     return ParentNode("div", block_nodes)
 
 def main():
     md = """
-```
-This is text that _should_ remain
-the **same** even with inline stuff
-```
+# this is an h1
+
+this is paragraph text
+
+## this is an h2
 """
     node = markdown_to_html_node(md)
     # for node in nodes:

@@ -10,15 +10,12 @@ class BlockType(Enum):
     ORDERED_LIST = "ordered_list"
 
 def markdown_to_blocks(markdown: str) -> list[str]:
-    splited = markdown.split("\n\n")
-    blocks = []
-    for line in splited:
-        line = line.strip()
-        blocks.append(line)
-    return blocks
+    split_blocks = markdown.split("\n\n")
+    return [block.strip() for block in split_blocks if block.strip()]
 
 def lines_starts_with(lines: str, pattern: str) -> bool:
-    return all(re.search(pattern, line) for line in lines.splitlines())
+    block_lines = lines.splitlines()
+    return bool(block_lines) and all(re.search(pattern, line) for line in block_lines)
 
 
 def block_to_block_type(md_block: str) -> BlockType:
