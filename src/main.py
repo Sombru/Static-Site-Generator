@@ -4,6 +4,25 @@ import os
 import shutil
 import re
 
+
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str):
+    if dest_dir_path.endswith(".md"):
+        dest_dir_path = dest_dir_path.replace(".md", ".html")
+    if os.path.isfile(dir_path_content) and dir_path_content.endswith(".md"):
+        generate_page(dir_path_content, template_path, dest_dir_path)
+        return 
+
+    entries = os.listdir(dir_path_content)
+
+    for entry in entries:
+        if os.path.isfile(dir_path_content) and dir_path_content.endswith(".md"):
+            generate_page(dir_path_content, template_path, dest_dir_path)
+        else:
+            if not os.path.exists(dest_dir_path):
+                os.mkdir(dest_dir_path)
+            generate_pages_recursive(os.path.join(dir_path_content, entry), template_path,  os.path.join(dest_dir_path, entry))
+
+
 def generate_page(from_path, template_path, dest_path: str):
     print(f"Generating page {from_path} to {dest_path} using {template_path}")
     with open(from_path) as file:
@@ -34,8 +53,7 @@ def copy_to_dest(src: str, dest: str):
         return 
 
     entries = os.listdir(src)
-    print(src, dest)
-    print(entries)
+
     for entry in entries:
         if os.path.isfile(src):
             print(f"copying {src} to {dest}")
@@ -48,5 +66,7 @@ def copy_to_dest(src: str, dest: str):
 
 def main():
     copy_to_dest("static", "public")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
+    
+
 main()

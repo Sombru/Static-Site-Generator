@@ -136,10 +136,10 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
            
     return ParentNode("div", block_nodes)
 
-def main():
-    md = open("content/index.md").read()
-    node = markdown_to_html_node(md)
-    # for node in nodes:
-    print(node.to_html())
+# def main():
+#     md = open("content/index.md").read()
+#     node = markdown_to_html_node(md)
+#     # for node in nodes:
+#     print(node.to_html())
     
-main()
+# main()
