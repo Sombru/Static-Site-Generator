@@ -64,6 +64,7 @@ def main():
         basepath = "/"
     else:
         basepath = sys.argv[1]
+    print(basepath)
     src: str = "static"
     dest: str = "docs"
     try:
@@ -75,7 +76,5 @@ def main():
     template_path: str = "template.html"
     dest_dir_path: str = dest
     generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath)
-    
-    
 
 main()
