@@ -39,6 +39,8 @@ class LeafNode(HTMLNode):
         super().__init__(tag=tag, value=value, props=props)
 
     def to_html(self) -> str:
+        if self.tag == "img":
+            return f"<{self.tag}{self.props_to_html()}>"
         if not self.value:
             raise ValueError("Expected value in LeafNode")
         if not self.tag:
@@ -90,7 +92,7 @@ def text_to_children(text: str) -> list[HTMLNode]:
     return res
 
 def remove_heading_prefix(line: str) -> str:
-    return re.sub(r"^#+ ", "", line)
+    return re.sub(r"^#+\s* ", "", line)
 
 def remove_block_quote_prefix(line: str) -> str:
     return re.sub(r">\s+", "", line)
@@ -135,13 +137,7 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
     return ParentNode("div", block_nodes)
 
 def main():
-    md = """
-# this is an h1
-
-this is paragraph text
-
-## this is an h2
-"""
+    md = open("content/index.md").read()
     node = markdown_to_html_node(md)
     # for node in nodes:
     print(node.to_html())
